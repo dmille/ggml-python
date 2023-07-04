@@ -337,9 +337,8 @@ GGML_FTYPE_MOSTLY_Q6_K = 14
 #     GGML_OP_ROPE_BACK,
 #     GGML_OP_ALIBI,
 #     GGML_OP_CLAMP,
-#     GGML_OP_CONV_1D_1S_PH,
-#     GGML_OP_CONV_1D_2S_PH,
-#     GGML_OP_CONV_2D_SK_P0,
+#     GGML_OP_CONV_1D,
+#     GGML_OP_CONV_2D,
 
 #     GGML_OP_FLASH_ATTN,
 #     GGML_OP_FLASH_FF,
@@ -408,22 +407,21 @@ GGML_OP_ROPE = 45
 GGML_OP_ROPE_BACK = 46
 GGML_OP_ALIBI = 47
 GGML_OP_CLAMP = 48
-GGML_OP_CONV_1D_1S_PH = 49
-GGML_OP_CONV_1D_2S_PH = 50
-GGML_OP_CONV_2D_SK_P0 = 51
-GGML_OP_FLASH_ATTN = 52
-GGML_OP_FLASH_FF = 53
-GGML_OP_FLASH_ATTN_BACK = 54
-GGML_OP_WIN_PART = 55
-GGML_OP_WIN_UNPART = 56
-GGML_OP_MAP_UNARY = 57
-GGML_OP_MAP_BINARY = 58
-GGML_OP_MAP_CUSTOM1 = 59
-GGML_OP_MAP_CUSTOM2 = 60
-GGML_OP_MAP_CUSTOM3 = 61
-GGML_OP_CROSS_ENTROPY_LOSS = 62
-GGML_OP_CROSS_ENTROPY_LOSS_BACK = 63
-GGML_OP_COUNT = 64
+GGML_OP_CONV_1D = 49
+GGML_OP_CONV_2D = 50
+GGML_OP_FLASH_ATTN = 51
+GGML_OP_FLASH_FF = 52
+GGML_OP_FLASH_ATTN_BACK = 53
+GGML_OP_WIN_PART = 54
+GGML_OP_WIN_UNPART = 55
+GGML_OP_MAP_UNARY = 56
+GGML_OP_MAP_BINARY = 57
+GGML_OP_MAP_CUSTOM1 = 58
+GGML_OP_MAP_CUSTOM2 = 59
+GGML_OP_MAP_CUSTOM3 = 60
+GGML_OP_CROSS_ENTROPY_LOSS = 61
+GGML_OP_CROSS_ENTROPY_LOSS_BACK = 62
+GGML_OP_COUNT = 63
 
 # struct ggml_object {
 #     size_t offs;
@@ -3618,69 +3616,54 @@ lib.ggml_clamp.restype = ctypes.POINTER(ggml_tensor)
 # // b:   3000   80    1    1
 # // res: 3000  768    1    1
 # // used in whisper
-def ggml_conv_1d_s1_ph(
+def ggml_conv_1d(
     ctx: ggml_context_p,
     a: ggml_tensor_p,  
-    b: ggml_tensor_p,  
+    b: ggml_tensor_p,
+    s0: Union[ctypes.c_int, int],
+    p0: Union[ctypes.c_int, int],
+    d0: Union[ctypes.c_int, int],
 ) -> ggml_tensor_p:  
-    return lib.ggml_conv_1d_s1_ph(ctx, a, b)
+    return lib.ggml_conv_1d(ctx, a, b, s0, p0, d0)
 
 
-lib.ggml_conv_1d_s1_ph.argtypes = [
+lib.ggml_conv_1d.argtypes = [
     ggml_context_p,
     ctypes.POINTER(ggml_tensor),
     ctypes.POINTER(ggml_tensor),
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
 ]
-lib.ggml_conv_1d_s1_ph.restype = ctypes.POINTER(ggml_tensor)
+lib.ggml_conv_1d.restype = ctypes.POINTER(ggml_tensor)
 
 
-# // used in whisper
-# GGML_API struct ggml_tensor * ggml_conv_1d_s2_ph(
-#         struct ggml_context * ctx,
-#         struct ggml_tensor  * a,
-#         struct ggml_tensor  * b);
-def ggml_conv_1d_s2_ph(
+def ggml_conv_2d(
     ctx: ggml_context_p,
     a: ggml_tensor_p,  
-    b: ggml_tensor_p,  
-) -> ggml_tensor_p:  
-    return lib.ggml_conv_1d_s2_ph(ctx, a, b)
-
-
-lib.ggml_conv_1d_s2_ph.argtypes = [
-    ggml_context_p,
-    ctypes.POINTER(ggml_tensor),
-    ctypes.POINTER(ggml_tensor),
-]
-lib.ggml_conv_1d_s2_ph.restype = ctypes.POINTER(ggml_tensor)
-
-
-# // kernel size is a->ne[0] x a->ne[1]
-# // stride is equal to kernel size
-# // padding is zero
-# // example:
-# // a:     16   16    3  768
-# // b:   1024 1024    3    1
-# // res:   64   64  768    1
-# // used in sam
-# GGML_API struct ggml_tensor * ggml_conv_2d_sk_p0(
-#         struct ggml_context * ctx,
-#         struct ggml_tensor  * a,
-#         struct ggml_tensor  * b);
-def ggml_conv_2d_sk_p0(
-    ctx: ggml_context_p,
-    a: ggml_tensor_p,  
-    b: ggml_tensor_p,  
+    b: ggml_tensor_p,
+    s0: Union[ctypes.c_int, int],
+    s1: Union[ctypes.c_int, int],
+    p0: Union[ctypes.c_int, int],
+    p1: Union[ctypes.c_int, int],
+    d0: Union[ctypes.c_int, int],
+    d1: Union[ctypes.c_int, int],
 ) -> ggml_tensor_p:
-    return lib.ggml_conv_2d_sk_p0(ctx, a, b)
+    return lib.ggml_conv_2d(ctx, a, b, s0, s1, p0, p1, d0, d1)
 
 
-lib.ggml_conv_2d_sk_p0.argtypes = [
+lib.ggml_conv_2d.argtypes = [
     ggml_context_p,
     ctypes.POINTER(ggml_tensor),
     ctypes.POINTER(ggml_tensor),
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.c_int,
 ]
-lib.ggml_conv_2d_sk_p0.restype = ctypes.POINTER(ggml_tensor)
+lib.ggml_conv_2d.restype = ctypes.POINTER(ggml_tensor)
 
 
 # GGML_API struct ggml_tensor * ggml_flash_attn(
